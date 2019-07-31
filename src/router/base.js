@@ -4,15 +4,15 @@ import TeacherManage from '../views/base/teacherManage.vue'
 
 export default[
 	{
-		path:'/classManage',
+		path:'classManage',
 		component:ClassManage
 	},
 	{
-		path:'/studentManage',
+		path:'studentManage',
 		component:StudentManage
 	},
 	{
-		path:'/teacherManage',
+		path:'teacherManage',
 		component:TeacherManage
 	}
 ]

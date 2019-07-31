@@ -18,6 +18,7 @@
 }
 #nav {
   padding: 30px;
+  // position: absolute;
   a {
     font-weight: bold;
     color: #2c3e50;
@@ -25,5 +26,9 @@
       color: #42b983;
     }
   }
+  
 }
+// router-view{
+//     margin-top: 81px;
+//   }
 </style>
