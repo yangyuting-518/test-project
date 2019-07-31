@@ -26,9 +26,8 @@
       color: #42b983;
     }
   }
-  
 }
-// router-view{
-//     margin-top: 81px;
-//   }
+router-view{
+    margin-top: 81px;
+  }
 </style>
