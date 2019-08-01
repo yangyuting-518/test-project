@@ -8,7 +8,11 @@
   </div>
 </template>
 
-<style lang="less">
+<style lang="less" scoped>
+body{
+  padding: 0;
+  margin: 0;
+}
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -17,8 +21,8 @@
   color: #2c3e50;
 }
 #nav {
-  padding: 30px;
-  // position: absolute;
+  height: 30px;
+  text-align: right;
   a {
     font-weight: bold;
     color: #2c3e50;
@@ -28,6 +32,6 @@
   }
 }
 router-view{
-    margin-top: 81px;
-  }
+  margin-top: 30px;
+}
 </style>
