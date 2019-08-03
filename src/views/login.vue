@@ -30,37 +30,48 @@
 <script>
 import Base64 from '../util/Base64.js'
 import Cookie from '../util/Cookie.js'
+import { setTimeout } from 'timers';
 export default {
   data() {
     return {
-      ruleForm: {
-        user: "",
-        pass: "",
+      ruleForm: {//存储需要提交的表单信息
+        user: "",//用户名
+        pass: "",//密码
     },
-    checked: false,
-    loginStatu: false,
-	  userToken: '',
-      rules: {
-        user: [
-          { required: true, message: "请输入用户名", trigger: "blur" }
-        ],
-        pass: [{ required: true, message: "请输入密码", trigger: "blur" }
-        ]
-      }
+    checked: false,//默认不记住密码
+    loginStatu: false,//默认登录不是加载状态
+	  userToken: '',//存储令牌
+    rules: {//定义表单验证的规则
+      user: [
+        { required: true, message: "请输入用户名", trigger: "blur" }
+      ],
+      pass: [{ required: true, message: "请输入密码", trigger: "blur" }
+      ]
+    }
     };
   },
+  /**
+   * 创建后
+   */
   created(){
-   if(Cookie.getCookie("name")&&Cookie.getCookie("password")){//当cookie中有值时
-   this.checked=true;
-    this.ruleForm.user = Base64.decode(Cookie.getCookie("name"));
+   if(Cookie.getCookie("name")&&Cookie.getCookie("password")){//当用户记住密码后cookie中有值时
+   this.checked=true;//选中记住密码
+    this.ruleForm.user = Base64.decode(Cookie.getCookie("name"));//对用户名进行解码
 	  this.ruleForm.pass = Base64.decode(Cookie.getCookie("password"));
    }
   },
   methods: {
+    /**
+     * 表单提交
+     * @param formName 需要提交的表单
+     * @param userMobile 用户名
+     * @param userPassword 用户密码
+     */
     submitForm(formName) {
-    console.log(formName)
-    var that = this; 
+    // console.log(formName)
+    var that = this; //把this指向的vue实例赋给that
     that.loginStatu=true;
+    //根据组件名点出整个表单校验的方法
     that.$refs[formName].validate((valid) => {
       if(valid){//通过验证
           that.axios.get("OAuth/authenticate",{
@@ -72,24 +83,24 @@ export default {
         .then(res => {
           that.loginStatu=false;
           // console.log(res);
+          //存储后台返回的令牌信息
           that.userToken=res.data.token_type+" "+res.data.access_token;
           that.$message.success('登录成功');
+          Cookie.removeCookie("name");
+          Cookie.removeCookie("password");
           if(that.checked){//记住密码时
-            //先移除在加入，确保只有一个用户名和账户存入
-            Cookie.removeCookie("name");
-            Cookie.removeCookie("password");
             let user = Base64.encode(that.ruleForm.user);
             let pwd = Base64.encode(that.ruleForm.pass);
             Cookie.setCookie("name",user,{maxAge:60*60});
             Cookie.setCookie("password",pwd,{maxAge:60*60});
-          }else{
-           Cookie.removeCookie("name");
-           Cookie.removeCookie("password");
           }
-          this.$router.push("/");
+          this.$router.replace("/home");
         })
         .catch((err)=>{
-          that.loginStatu=false;
+          setTimeout(function(){
+             that.loginStatu=false
+          },3000)
+         
           // console.log(err.response)
           if(err.response.status==401){
             that.$message.error('用户名或密码不存在');
@@ -108,7 +119,7 @@ export default {
 };
 </script>
 
-<style scoped lang='less' scoped>
+<style lang='less' scoped>
 #login{
 	background:url("../assets/bg.jpg") 0px 0px no-repeat;
 	background-size: 100% 100%;

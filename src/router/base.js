@@ -1,18 +1,18 @@
-import ClassManage from '../views/base/classManage.vue'
-import StudentManage from '../views/base/studentManage.vue'
-import TeacherManage from '../views/base/teacherManage.vue'
+import ClassManage from '../views/base/ClassManage.vue'
+import StudentManage from '../views/base/StudentManage.vue'
+import TeacherManage from '../views/base/TeacherManage.vue'
 
 export default[
 	{
-		path:'classManage',
+		path:'ClassManage',
 		component:ClassManage
 	},
 	{
-		path:'studentManage',
+		path:'StudentManage',
 		component:StudentManage
 	},
 	{
-		path:'teacherManage',
+		path:'TeacherManage',
 		component:TeacherManage
 	}
 ]

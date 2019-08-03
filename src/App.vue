@@ -1,17 +1,17 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">主页</router-link> |
+    <!-- <div id="nav">
+      <router-link to="/">主页</router-link> 
       <router-link to="/login">登录</router-link>
-    </div>
+    </div> -->
     <router-view/>
   </div>
 </template>
 
-<style lang="less" scoped>
+<style lang="less" >
 body{
-  padding: 0;
   margin: 0;
+  padding: 0;
 }
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;

@@ -2,8 +2,8 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Home from './views/Home.vue'
 import Base from './router/base.js'
-import OnlineTest from './router/onlineTest.js'
-import Login from './views/login.vue'
+import OnlineTest from './router/test.js'
+import Login from './views/Login.vue'
 
 Vue.use(Router)
 
