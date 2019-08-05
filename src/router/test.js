@@ -6,23 +6,23 @@ import ViewScore from '../views/test/ViewScore.vue'
 
 export default[
 	{
-		path:'ArrangeTest',
+		path:'/ArrangeTest',
 		component:ArrangeTest
 	},
 	{
-		path:'CorrectTestPaper',
+		path:'/CorrectTestPaper',
 		component:CorrectTestPaper
 	},
 	{
-		path:'MaintainTestPaper',
+		path:'/MaintainTestPaper',
 		component:MaintainTestPaper
 	},
 	{
-		path:'MakeTestPaper',
+		path:'/MakeTestPaper',
 		component:MakeTestPaper
 	},
 	{
-		path:'ViewScore',
+		path:'/ViewScore',
 		component:ViewScore
 	},
 ]

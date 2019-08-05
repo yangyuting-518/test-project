@@ -12,7 +12,7 @@ export default new Router({
   base: process.env.BASE_URL,//与项目的基路径保持一致，可以在vue.config.js中修改
   routes: [
     {
-      path: '/',
+      path: '/home',
       name: 'home',
       component: Home,
 			children:[
@@ -21,7 +21,7 @@ export default new Router({
 			]
     },
     {
-      path: '/login',
+      path: '/',
       name: 'login',
       component:Login
     }
