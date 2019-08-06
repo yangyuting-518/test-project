@@ -40,7 +40,7 @@ export default {
     },
     checked: false,//默认不记住密码
     loginStatu: false,//默认登录不是加载状态
-	  userToken: '',//存储令牌
+	  // userToken: '',//存储令牌
     rules: {//定义表单验证的规则
       user: [
         { required: true, message: "请输入用户名", trigger: "blur" }
@@ -84,7 +84,10 @@ export default {
           that.loginStatu=false;
           // console.log(res);
           //存储后台返回的令牌信息
-          that.userToken=res.data.token_type+" "+res.data.access_token;
+          let userToken=res.data.token_type+" "+res.data.access_token;
+          sessionStorage.setItem("token",userToken);//存储令牌
+          sessionStorage.setItem("uid",res.data.profile.userUid)//存储当前用户的唯一标识符
+          sessionStorage.setItem("userName",res.data.profile.userName)//存储当前用户的名字
           that.$message.success('登录成功');
           Cookie.removeCookie("name");
           Cookie.removeCookie("password");

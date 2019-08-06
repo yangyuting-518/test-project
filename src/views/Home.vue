@@ -3,11 +3,12 @@
     <el-container style="height: 100%;">
       <el-aside width="auto">
         <el-menu
-          default-active
+          :default-active="$route.path"
           class="el-menu-vertical-demo"
           :collapse="isCollapse"
           background-color="#545c64"
           text-color="#fff"
+          router
           active-text-color="#41B883"
           :default-openeds="['1','2']"
         >
@@ -15,15 +16,24 @@
             <img src="../assets/logo.png" />
             <span slot="title">后台管理系统</span>
           </el-menu-item>
+          <el-menu-item class="el_item">
+            <i class="el-icon-s-home"></i>
+            <span slot="title">首页</span>
+          </el-menu-item>
           <el-submenu v-for="(item,index) in list" :key="index" :index="index+1+''">
             <template slot="title">
               <i class="el-icon-menu"></i>
               <span>{{item.title}}</span>
             </template>
             <el-menu-item-group>
-              <el-menu-item v-for="(value,n) in item.sublist" :key="n" @click="addTab(value.name)">
-                <router-link :to="value.subpath">{{value.name}}</router-link>
-                <!-- <span class="checkIcon"></span> -->
+              <el-menu-item
+                v-for="(value,n) in item.sublist"
+                :key="n"
+                @click="addTab(value)"
+                :index="value.subpath"
+              >
+                <!-- <router-link :to="value.subpath">{{value.name}}</router-link> -->
+                {{value.name}}
               </el-menu-item>
             </el-menu-item-group>
           </el-submenu>
@@ -39,24 +49,20 @@
             <el-tabs
               v-model="editableTabsValue"
               type="card"
-              closable
-              @tab-remove="removeTab"
               @tab-click="handleClick"
+              @tab-remove="removeTab"
             >
               <el-tab-pane
-                v-for="item in editableTabs"
+                v-for="(item,index) in editableTabs"
                 :key="item.name"
                 :label="item.title"
                 :name="item.name"
+                :closable="index>0"
               ></el-tab-pane>
             </el-tabs>
             <div class="userInfo">
-              <el-avatar
-                :size="50"
-                src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
-                style="margin-left: 15px"
-              ></el-avatar>
-              <span>张三</span>
+              <el-avatar :size="50" :src="avatar" style="margin-left: 15px"></el-avatar>
+              <span>{{user}}</span>
             </div>
           </el-header>
           <el-main>
@@ -75,7 +81,11 @@ export default {
   components: {},
   data() {
     return {
+	  user:"",
+    //   indexPath: "/home", //首页路径
       isCollapse: false, //默认不折叠
+      avatar:
+        "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
       openeds: [],
       list: [
         {
@@ -125,10 +135,33 @@ export default {
           ]
         }
       ],
-      editableTabsValue: "1",//绑定选中选项卡的name
-      editableTabs: [],//存储新增标签页
-      tabIndex: 1
+      asideList: [], //保存左侧菜单栏信息
+      editableTabsValue: "", //绑定选中标签页的name
+      editableTabs: [
+        {
+          title: "首页",
+          name: "/home"
+        }
+      ] //存储打开的标签页
+      //   tabIndex: 1
     };
+  },
+  created() {
+    let that = this;
+    that.list.forEach(function(item) {
+      that.asideList.push(...item.sublist);
+	});
+	// 刷新后重新渲染用户打开的标签页
+	let tabs = JSON.parse(sessionStorage.getItem("tabs"));
+	let activeTab = sessionStorage.getItem("activeTab");
+	if(tabs&&activeTab){
+		this.editableTabs=tabs;
+		this.editableTabsValue=activeTab;
+	};
+	if(sessionStorage.getItem("userName")){
+		this.user= sessionStorage.getItem("userName")
+	}
+	
   },
   methods: {
     /**
@@ -138,53 +171,82 @@ export default {
       let that = this;
       that.isCollapse = !that.isCollapse;
     },
-    /**动态增加标签 */
+    /*
+			*动态增加标签
+			@params string targetName是传入的左侧菜单栏的标题
+			*/
     addTab(targetName) {
+      // console.log(targetName);
       let that = this;
-      let newTabName = ++that.tabIndex + "";
+      let newTabName = targetName.subpath; //绑定当前打开菜单的路径到tag标签页上
       that.editableTabsValue = newTabName;
-      let tabName = []; //存储当前所有标签的tittle
-      //判断当前打开的标签时候已经存在
-      that.editableTabs.forEach(function(item) {
-        tabName.push(item.title);
-      });
-      if (tabName.indexOf(targetName) == -1) {
+      let existence = that.editableTabs.findIndex(item => {
+        return item.title == targetName.name;
+      }); //使用findIndex 方法查找打开的标签页里面有没有要打开的目标标签;
+      if (existence == -1) {
         that.editableTabs.push({
-          title: targetName,
+          title: targetName.name,
           name: newTabName
         });
+      } else {
+        //如果要打开的目标标签页已经在打开的标签页数组中，就让选中标签变成目标标签
+        that.editableTabsValue = that.editableTabs[existence].name;
       }
+      sessionStorage.setItem("tabs", JSON.stringify(that.editableTabs));
+      sessionStorage.setItem("activeTab", that.editableTabsValue);
     },
-    /**点击标签跳转到左边对应路由 */
+    /*
+			*点击标签跳转到左边对应路由
+			@params {obj}
+			tab 标签页的信息
+			*/
     handleClick(tab) {
-		//   console.log(tab, event);
-		let that = this;
-		that.list.forEach(function(item){
-			item.sublist.forEach(function(value){
-				if(tab.label==value.name){
-					that.$router.replace(value.subpath);
-				}
-			})
-		})
+      // console.log(tab)
+      let that = this;
+      that.asideList.forEach(item => {
+        if (tab.label == item.name) {
+          that.$router.replace(tab.paneName);
+        }
+      });
+      sessionStorage.setItem("activeTab", that.editableTabsValue);
     },
-    /**删除标签页 */
-    removeTab(targetName) {//targetName要删除的标签位置
-    console.log(targetName)
-      let tabs = this.editableTabs;//得到当前用户打开标签页的数组
-      let activeName = this.editableTabsValue;//得到现在标签默认选中的位置
-      console.log(targetName)
-      if (activeName === targetName) {//当前标签选中的位置与要删除的位置相等
+    /*
+			*删除标签页 
+			@params string
+			targetName 是标签页的name值
+			*/
+    removeTab(targetName) {
+      //targetName要删除的标签位置
+      // console.log(targetName);
+      let that = this;
+      let tabs = that.editableTabs; //得到当前用户打开标签页的数组
+      let activeName = that.editableTabsValue; //得到现在标签默认选中的位置
+      if (activeName === targetName) {
+        //当前标签选中打开的位置与要删除的位置相等
         tabs.forEach((tab, index) => {
-          if (tab.name === targetName) {//如果tabs数组中元素的name与传入的要删掉的targetName相等，只得到满足条件的那一个元素
-            let nextTab = tabs[index + 1] || tabs[index - 1];//就让当前元素的下标加一或减一
+          if (tab.name === targetName) {
+            //如果tabs数组中元素的name与传入的要删掉的targetName相等，只得到满足条件的那一个元素
+            let nextTab = tabs[index + 1] || tabs[index - 1]; //就让当前元素的下标加一或减一
             if (nextTab) {
               activeName = nextTab.name;
             }
           }
         });
       }
-      this.editableTabsValue = activeName;
-      this.editableTabs = tabs.filter(tab => tab.name !== targetName);//过滤掉要删除的元素，实现删除的效果
+      that.editableTabsValue = activeName;
+      let index1 = tabs.findIndex(item => {
+        return item.name == targetName;
+      }); //当前要删除的标签在打开标签数组中的下标
+      // this.editableTabs = tabs.filter(tab => tab.name !== targetName);//过滤掉要删除的元素，实现删除的效果,tab是editableTabs的元素
+      that.asideList.find(item => {
+        return item.name == tabs[index1 - 1].title;
+      });
+      tabs.splice(index1, 1);
+      that.editableTabs = tabs;
+	  that.$router.replace(activeName); //使用element的 v-model绑定的 选中的选项卡来进行路由跳转
+	  //保存用户当前操作，保存打开的标签页数组，及当前所在的标签页
+      sessionStorage.setItem("tabs", JSON.stringify(that.editableTabs));
+      sessionStorage.setItem("activeTab", that.editableTabsValue);
     }
   }
 };
@@ -201,58 +263,88 @@ export default {
   bottom: 0;
 }
 
-.el-aside {
+ .el-aside {
   height: 100%;
   background-color: #545c64;
   overflow: hidden;
-  .el-menu{
-    .el-menu-item {
-    padding: 0!important;
-    height: 60px !important;
-    line-height: 60px;
-    text-align: left;
-    text-indent: 80px;
-    /deep/&.title{
+
+  .el-menu {
+    border-right: 0;
+
+    /deep/.el-menu-item {
+      padding: 0 !important;
+      height: 60px !important;
+      line-height: 60px;
       text-align: left;
-      text-indent: 0px;
-      img {
-        width: 60px;
-        height: 60px;
-        margin-right: 10px;
+	  text-indent: 80px;
+		&.is-active {
+			color: wheat !important;
+			background-color: #000 !important;
+			position: relative;
+			&::after {
+			content: "";
+			position: absolute;
+			top: 9px;
+			right: 0;
+			width: 0;
+			height: 0;
+			border: 20px solid transparent;
+			border-right: 20px solid #fff;
+			}
+		}
+		&.el_item {
+			text-indent: 0px;
+			padding-left: 20px !important;
+			background-color: #545c64 !important;
+			 &.is-active{
+				 &::after{
+					 border:0;
+				 }
+			 }
+		}
+		&.title {
+			text-align: left;
+			text-indent: 0px;
+			color: white !important;
+			background-color: #545c64 !important;
+			 &.is-active{
+				 &::after{
+					 border:0;
+				 }
+			 }
+			img {
+				width: 60px;
+				height: 60px;
+			}
+			.el-tooltip {
+				&:first-child {
+				padding: 0 !important;
+				}
+			}
+			span {
+			font-size: 20px;
+			font-weight: bold;
+			}
+		}
+	}
+  .el-submenu {
+    /deep/.el-submenu__title {
+      text-align: left;
+      height: 60px !important;
+      line-height: 60px;
+    }
+    a {
+      text-decoration: none;
+      color: white;
+      display: block;
+
+      &.router-link-active {
+        background-color: #000;
+        color: wheat;
       }
-      span{
-        font-size: 20px;
-        font-weight: bold;
-      }
-   }
-   /deep/ .el-tooltip {
-      left: -18px !important;
     }
   }
-}
-.el-submenu {
-  /deep/.el-submenu__title {
-    text-align: left;
-    // text-indent: -70px;
-    height: 60px !important;
-    line-height: 60px;
-    // .el-menu-item-group {
-    //   .el-menu-item {
-        
-    //   }
-    // }
   }
-  a {
-    text-decoration: none;
-	  color: white;
-	  display: block;
-    &.router-link-active{
-      background-color:#000;
-      color: wheat;
-    }
-  }
-  }
-  
 }
 
 .el-header {
@@ -262,38 +354,37 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
+
   .el-button {
     height: 60px;
+    margin-right: 10px;
     font-size: 25px;
   }
+
   .el-tabs {
-    max-width: 70%;
+    flex: 1;
+    overflow: hidden;
+    height: 42px;
+
     /deep/.el-tabs__header {
       margin: 0;
-      .el-tabs__nav {
-        border: 0;
-        .el-tabs__item {
-          color: white;
-          border: 1px solid white;
-          margin-right: 10px;
-          &:first-child {
-            border-left: 1px solid white;
-          }
-          &.is-active {
-            color: wheat;
-            border: 0;
-            border: 1px solid wheat;
-          }
+
+      .el-tabs__item {
+        color: white;
+        &.is-active {
+          border-bottom-color: #545c64;
+          color: wheat;
         }
       }
     }
   }
+
   .userInfo {
     width: 120px;
     display: flex;
     justify-content: space-around;
     align-items: center;
-    // max-width: 10%;
+
     span {
       &:last-child {
         color: white;
@@ -305,10 +396,5 @@ export default {
 
 .el-main {
   padding: 0;
-  .el-tabs--card {
-    /deep/ & > .el-tabs__header {
-      border-bottom: none;
-    }
-  }
 }
 </style>

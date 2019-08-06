@@ -8,11 +8,12 @@
       label-width="100px"
       class="demo-ruleForm"
     >
+    <h2>修改密码</h2>
       <el-form-item label="旧密码" prop="oldPass">
-        <el-input type="password" v-model.number="ruleForm.age"></el-input>
+        <el-input type="text" v-model="ruleForm.oldPass"></el-input>
       </el-form-item>
       <el-form-item label="新密码" prop="newPass">
-        <el-input type="password" v-model="ruleForm.pass" autocomplete="off"></el-input>
+        <el-input type="text" v-model="ruleForm.newPass" autocomplete="off"></el-input>
       </el-form-item>
       <el-form-item label="确认密码" prop="checkPass">
         <el-input type="password" v-model="ruleForm.checkPass" autocomplete="off"></el-input>
@@ -25,12 +26,13 @@
 </template>
 
 <script>
+import axios from 'axios';
 export default {
   data() {
     var validatePass = (rule, value, callback) => {
       if (value === "") {
         callback(new Error("请再次输入密码"));
-      } else if (value !== this.ruleForm.pass) {
+      } else if (value !== this.ruleForm.newPass) {
         callback(new Error("两次输入密码不一致!"));
       } else {
         callback();
@@ -38,21 +40,36 @@ export default {
     };
     return {
       ruleForm: {
-        pass: "",
+        oldPass:"",
+        newPass: "",
         checkPass: "",
       },
       rules: {
-		oldPass: [ { required: true, message: "请输入旧密码", trigger: "blur" }],
-		newPass: [{ required: true,message: "请输入新密码", trigger: "blur" }],
-        checkPass: [{ validator: validatePass, trigger: "blur" }]
+        oldPass: [ { required: true, message: "请输入旧密码", trigger: "blur" }],
+        newPass: [{ required: true,message: "请输入新密码", trigger: "blur" }],
+        checkPass: [{required: true, validator: validatePass, trigger: "blur" }]
       }
     };
   },
   methods: {
     submitForm(formName) {
-      this.$refs[formName].validate(valid => {
+      let that = this
+      that.$refs[formName].validate(valid => {
         if (valid) {
-          alert("submit!");
+          console.log(111)
+          axios.get('/User/ModifyPassword',{
+            params:{
+              uid:sessionStorage.getItem("uid"),
+              oldPassword:that.ruleForm.oldPass,
+              newPassword:that.ruleForm.newPass
+            } 
+          }).then(res=>{
+            console.log(res)
+            that.$message.success("修改密码成功");
+
+          }).catch(err=>{
+            console.log(err)
+          })
         } else {
           console.log("error submit!!");
           return false;
