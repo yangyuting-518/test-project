@@ -2,6 +2,7 @@
   <div id="home" style="height: 100%;">
     <el-container style="height: 100%;">
       <el-aside width="auto">
+        <!-- :default-active="$route.path"绑定档前激活菜单的index  -->
         <el-menu
           :default-active="$route.path"
           class="el-menu-vertical-demo"
@@ -81,8 +82,8 @@ export default {
   components: {},
   data() {
     return {
-	  user:"",
-    //   indexPath: "/home", //首页路径
+      user: "",
+      //   indexPath: "/home", //首页路径
       isCollapse: false, //默认不折叠
       avatar:
         "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
@@ -150,18 +151,17 @@ export default {
     let that = this;
     that.list.forEach(function(item) {
       that.asideList.push(...item.sublist);
-	});
-	// 刷新后重新渲染用户打开的标签页
-	let tabs = JSON.parse(sessionStorage.getItem("tabs"));
-	let activeTab = sessionStorage.getItem("activeTab");
-	if(tabs&&activeTab){
-		this.editableTabs=tabs;
-		this.editableTabsValue=activeTab;
-	};
-	if(sessionStorage.getItem("userName")){
-		this.user= sessionStorage.getItem("userName")
-	}
-	
+    })
+    // 刷新后重新渲染用户打开的标签页
+    let tabs = JSON.parse(sessionStorage.getItem("tabs"));
+    let activeTab = sessionStorage.getItem("activeTab");
+    if (tabs && activeTab) {
+      this.editableTabs = tabs;
+      this.editableTabsValue = activeTab;
+    }
+    if (sessionStorage.getItem("userName")) {
+      this.user = sessionStorage.getItem("userName");
+    }
   },
   methods: {
     /**
@@ -243,8 +243,8 @@ export default {
       });
       tabs.splice(index1, 1);
       that.editableTabs = tabs;
-	  that.$router.replace(activeName); //使用element的 v-model绑定的 选中的选项卡来进行路由跳转
-	  //保存用户当前操作，保存打开的标签页数组，及当前所在的标签页
+      that.$router.replace(activeName); //使用element的 v-model绑定的 选中的选项卡来进行路由跳转
+      //保存用户当前操作，保存打开的标签页数组，及当前所在的标签页
       sessionStorage.setItem("tabs", JSON.stringify(that.editableTabs));
       sessionStorage.setItem("activeTab", that.editableTabsValue);
     }
@@ -263,7 +263,7 @@ export default {
   bottom: 0;
 }
 
- .el-aside {
+.el-aside {
   height: 100%;
   background-color: #545c64;
   overflow: hidden;
@@ -276,74 +276,74 @@ export default {
       height: 60px !important;
       line-height: 60px;
       text-align: left;
-	  text-indent: 80px;
-		&.is-active {
-			color: wheat !important;
-			background-color: #000 !important;
-			position: relative;
-			&::after {
-			content: "";
-			position: absolute;
-			top: 9px;
-			right: 0;
-			width: 0;
-			height: 0;
-			border: 20px solid transparent;
-			border-right: 20px solid #fff;
-			}
-		}
-		&.el_item {
-			text-indent: 0px;
-			padding-left: 20px !important;
-			background-color: #545c64 !important;
-			 &.is-active{
-				 &::after{
-					 border:0;
-				 }
-			 }
-		}
-		&.title {
-			text-align: left;
-			text-indent: 0px;
-			color: white !important;
-			background-color: #545c64 !important;
-			 &.is-active{
-				 &::after{
-					 border:0;
-				 }
-			 }
-			img {
-				width: 60px;
-				height: 60px;
-			}
-			.el-tooltip {
-				&:first-child {
-				padding: 0 !important;
-				}
-			}
-			span {
-			font-size: 20px;
-			font-weight: bold;
-			}
-		}
-	}
-  .el-submenu {
-    /deep/.el-submenu__title {
-      text-align: left;
-      height: 60px !important;
-      line-height: 60px;
-    }
-    a {
-      text-decoration: none;
-      color: white;
-      display: block;
-
-      &.router-link-active {
-        background-color: #000;
-        color: wheat;
+      text-indent: 80px;
+      &.is-active {
+        color: wheat !important;
+        background-color: #000 !important;
+        position: relative;
+        &::after {
+          content: "";
+          position: absolute;
+          top: 9px;
+          right: 0;
+          width: 0;
+          height: 0;
+          border: 20px solid transparent;
+          border-right: 20px solid #fff;
+        }
+      }
+      &.el_item {
+        text-indent: 0px;
+        padding-left: 20px !important;
+        background-color: #545c64 !important;
+        &.is-active {
+          &::after {
+            border: 0;
+          }
+        }
+      }
+      &.title {
+        text-align: left;
+        text-indent: 0px;
+        color: white !important;
+        background-color: #545c64 !important;
+        &.is-active {
+          &::after {
+            border: 0;
+          }
+        }
+        img {
+          width: 60px;
+          height: 60px;
+        }
+        .el-tooltip {
+          &:first-child {
+            padding: 0 !important;
+          }
+        }
+        span {
+          font-size: 20px;
+          font-weight: bold;
+        }
       }
     }
-  }
+    .el-submenu {
+      /deep/.el-submenu__title {
+        text-align: left;
+        height: 60px !important;
+        line-height: 60px;
+      }
+      a {
+        text-decoration: none;
+        color: white;
+        display: block;
+
+        &.router-link-active {
+          background-color: #000;
+          color: wheat;
+        }
+      }
+    }
   }
 }
 

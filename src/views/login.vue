@@ -84,7 +84,7 @@ export default {
           that.loginStatu=false;
           // console.log(res);
           //存储后台返回的令牌信息
-          let userToken=res.data.token_type+" "+res.data.access_token;
+          let userToken=res.data.token_type +' '+ res.data.access_token
           sessionStorage.setItem("token",userToken);//存储令牌
           sessionStorage.setItem("uid",res.data.profile.userUid)//存储当前用户的唯一标识符
           sessionStorage.setItem("userName",res.data.profile.userName)//存储当前用户的名字
@@ -103,7 +103,6 @@ export default {
           setTimeout(function(){
              that.loginStatu=false
           },3000)
-         
           // console.log(err.response)
           if(err.response.status==401){
             that.$message.error('用户名或密码不存在');

@@ -8,7 +8,7 @@
       label-width="100px"
       class="demo-ruleForm"
     >
-    <h2>修改密码</h2>
+      <h2>修改密码</h2>
       <el-form-item label="旧密码" prop="oldPass">
         <el-input type="text" v-model="ruleForm.oldPass"></el-input>
       </el-form-item>
@@ -26,7 +26,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import axios from "axios";
 export default {
   data() {
     var validatePass = (rule, value, callback) => {
@@ -40,36 +40,51 @@ export default {
     };
     return {
       ruleForm: {
-        oldPass:"",
+        oldPass: "",
         newPass: "",
-        checkPass: "",
+        checkPass: ""
       },
       rules: {
-        oldPass: [ { required: true, message: "请输入旧密码", trigger: "blur" }],
-        newPass: [{ required: true,message: "请输入新密码", trigger: "blur" }],
-        checkPass: [{required: true, validator: validatePass, trigger: "blur" }]
+        oldPass: [{ required: true, message: "请输入旧密码", trigger: "blur" }],
+        newPass: [{ required: true, message: "请输入新密码", trigger: "blur" }],
+        checkPass: [
+          { required: true, validator: validatePass, trigger: "blur" }
+        ]
       }
     };
   },
   methods: {
     submitForm(formName) {
-      let that = this
+      let that = this;
       that.$refs[formName].validate(valid => {
         if (valid) {
-          console.log(111)
-          axios.get('/User/ModifyPassword',{
-            params:{
-              uid:sessionStorage.getItem("uid"),
-              oldPassword:that.ruleForm.oldPass,
-              newPassword:that.ruleForm.newPass
-            } 
-          }).then(res=>{
-            console.log(res)
-            that.$message.success("修改密码成功");
-
-          }).catch(err=>{
-            console.log(err)
+          this.$confirm("是否要修改?", "提示", {
+            confirmButtonText: "确定",
+            cancelButtonText: "取消",
+            type: "warning"
           })
+            .then(() => {
+              axios.get("User/ModifyPassword", {
+                  params: {
+                    uid: sessionStorage.getItem("uid"),
+                    oldPassword: that.ruleForm.oldPass,
+                    newPassword: that.ruleForm.newPass
+                  }
+                })
+                .then(res => {
+                  console.log(res.data.cold);
+                  that.$message.success("修改密码成功");
+                })
+                .catch(err => {
+                  console.log(err);
+                });
+            })
+            .catch(() => {
+              this.$message({
+                type: "info",
+                message: "已取消操作"
+              });
+            });
         } else {
           console.log("error submit!!");
           return false;
