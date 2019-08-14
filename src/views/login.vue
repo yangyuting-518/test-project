@@ -10,7 +10,7 @@
         </el-form-item>
         <el-form-item label="账号" prop="user">
           <i class="el-icon-user"></i>
-          <el-input type="number" v-model="ruleForm.user" autocomplete="off"></el-input>
+          <el-input type="text" v-model="ruleForm.user" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="密码" prop="pass">
           <i class="el-icon-lock"></i>
@@ -94,21 +94,17 @@ export default {
           if(that.checked){//记住密码时
             let user = Base64.encode(that.ruleForm.user);
             let pwd = Base64.encode(that.ruleForm.pass);
-            Cookie.setCookie("name",user,{maxAge:60*60});
-            Cookie.setCookie("password",pwd,{maxAge:60*60});
+            Cookie.setCookie("name",user,{maxAge:60*60*60*24});
+            Cookie.setCookie("password",pwd,{maxAge:60*60*60*24});
           }
+          this.$message.success("登录成功")
           this.$router.replace("/home");
         })
         .catch((err)=>{
           setTimeout(function(){
              that.loginStatu=false
           },3000)
-          // console.log(err.response)
-          if(err.response.status==401){
-            that.$message.error('用户名或密码不存在');
-          }else{
-            that.$message.error('系统错误')
-          }
+          that.$message.error('用户名或密码错误');
         });
       }else{
         that.$message.warning("请输入账户名和密码");

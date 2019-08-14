@@ -1,44 +1,46 @@
 <template>
   <div id="home" style="height: 100%;">
-    <el-container style="height: 100%;">
+    <el-container>
       <el-aside width="auto">
-        <!-- :default-active="$route.path"绑定档前激活菜单的index  -->
-        <el-menu
-          :default-active="$route.path"
-          class="el-menu-vertical-demo"
-          :collapse="isCollapse"
-          background-color="#545c64"
-          text-color="#fff"
-          router
-          active-text-color="#41B883"
-          :default-openeds="['1','2']"
-        >
-          <el-menu-item class="title">
-            <img src="../assets/logo.png" />
-            <span slot="title">后台管理系统</span>
-          </el-menu-item>
-          <el-menu-item class="el_item">
-            <i class="el-icon-s-home"></i>
-            <span slot="title">首页</span>
-          </el-menu-item>
-          <el-submenu v-for="(item,index) in list" :key="index" :index="index+1+''">
-            <template slot="title">
-              <i class="el-icon-menu"></i>
-              <span>{{item.title}}</span>
-            </template>
-            <el-menu-item-group>
-              <el-menu-item
-                v-for="(value,n) in item.sublist"
-                :key="n"
-                @click="addTab(value)"
-                :index="value.subpath"
-              >
-                <!-- <router-link :to="value.subpath">{{value.name}}</router-link> -->
-                {{value.name}}
-              </el-menu-item>
-            </el-menu-item-group>
-          </el-submenu>
-        </el-menu>
+        <!-- <div style="position:relative"> -->
+          <!-- :default-active="$route.path"绑定档前激活菜单的index ,实现导航和页面同时变化 -->
+          <el-menu
+            :default-active="$route.path"
+            class="el-menu-vertical-demo"
+            :collapse="isCollapse"
+            background-color="#545c64"
+            text-color="#fff"
+            router
+            active-text-color="#409eff"
+            :default-openeds="['1','2']"
+          >
+            <el-menu-item class="title">
+              <img src="../assets/logo.png" />
+              <span slot="title">后台管理系统</span>
+            </el-menu-item>
+            <el-menu-item class="el_item">
+              <i class="el-icon-s-home"></i>
+              <span slot="title">首页</span>
+            </el-menu-item>
+            <el-submenu v-for="(item,index) in list" :key="index" :index="index+1+''">
+              <template slot="title">
+                <i class="el-icon-menu"></i>
+                <span>{{item.title}}</span>
+              </template>
+              <el-menu-item-group>
+                <el-menu-item
+                  v-for="(value,n) in item.sublist"
+                  :key="n"
+                  @click="addTab(value)"
+                  :index="value.subpath"
+                >
+                  <!-- <router-link :to="value.subpath">{{value.name}}</router-link> -->
+                  {{value.name}}
+                </el-menu-item>
+              </el-menu-item-group>
+            </el-submenu>
+          </el-menu>
+        <!-- </div> -->
       </el-aside>
       <el-main>
         <el-container>
@@ -61,10 +63,19 @@
                 :closable="index>0"
               ></el-tab-pane>
             </el-tabs>
-            <div class="userInfo">
-              <el-avatar :size="50" :src="avatar" style="margin-left: 15px"></el-avatar>
-              <span>{{user}}</span>
-            </div>
+            <el-dropdown>
+              <span class="el-dropdown-link userInfo">
+                <el-avatar :size="50" :src="avatar" style="margin-left: 15px"></el-avatar>
+                {{user}}
+                <i class="el-icon-arrow-down el-icon--right"></i>
+              </span>
+              <!-- 下拉显示部分 -->
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item>个人信息</el-dropdown-item>
+                <el-dropdown-item>修改密码</el-dropdown-item>
+                <el-dropdown-item @click.native="handLogout()">退出</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
           </el-header>
           <el-main>
             <router-view />
@@ -85,6 +96,7 @@ export default {
       user: "",
       //   indexPath: "/home", //首页路径
       isCollapse: false, //默认不折叠
+      realList: [], //保存面包屑导航中的路由
       avatar:
         "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
       openeds: [],
@@ -107,7 +119,11 @@ export default {
             {
               name: "修改密码",
               subpath: "/ModifyPassWord"
-            }
+            },
+            {
+              name: "角色管理",
+              subpath: "/RoleManage"
+            },
           ]
         },
         {
@@ -137,27 +153,27 @@ export default {
         }
       ],
       asideList: [], //保存左侧菜单栏信息
-      editableTabsValue: "", //绑定选中标签页的name
+      editableTabsValue: "", //绑定选中标签页的路径
       editableTabs: [
         {
           title: "首页",
           name: "/home"
         }
       ] //存储打开的标签页
-      //   tabIndex: 1
     };
   },
   created() {
     let that = this;
     that.list.forEach(function(item) {
       that.asideList.push(...item.sublist);
-    })
+    });
     // 刷新后重新渲染用户打开的标签页
     let tabs = JSON.parse(sessionStorage.getItem("tabs"));
     let activeTab = sessionStorage.getItem("activeTab");
     if (tabs && activeTab) {
       this.editableTabs = tabs;
       this.editableTabsValue = activeTab;
+      this.$router.replace(this.editableTabsValue);
     }
     if (sessionStorage.getItem("userName")) {
       this.user = sessionStorage.getItem("userName");
@@ -171,10 +187,11 @@ export default {
       let that = this;
       that.isCollapse = !that.isCollapse;
     },
-    /*
-			*动态增加标签
-			@params string targetName是传入的左侧菜单栏的标题
-			*/
+    /**
+     *动态增加标签
+     *@params {String}
+     * targetName是传入的左侧菜单栏的标题
+     */
     addTab(targetName) {
       // console.log(targetName);
       let that = this;
@@ -247,6 +264,17 @@ export default {
       //保存用户当前操作，保存打开的标签页数组，及当前所在的标签页
       sessionStorage.setItem("tabs", JSON.stringify(that.editableTabs));
       sessionStorage.setItem("activeTab", that.editableTabsValue);
+    },
+    handLogout() {
+      this.$confirm("确认退出吗, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      }).then(() => {
+        //清除缓存
+        sessionStorage.clear();
+        this.$router.replace("/");
+      });
     }
   }
 };
@@ -254,7 +282,7 @@ export default {
 
 <style lang="less" scoped>
 .el-menu-vertical-demo:not(.el-menu--collapse) {
-  width: 300px;
+  width: 200px;
   min-height: 400px;
   display: block;
   position: relative;
@@ -264,21 +292,19 @@ export default {
 }
 
 .el-aside {
-  height: 100%;
+  // height: 100%;
   background-color: #545c64;
-  overflow: hidden;
-
+  // overflow: hidden;
   .el-menu {
     border-right: 0;
-
     /deep/.el-menu-item {
       padding: 0 !important;
       height: 60px !important;
       line-height: 60px;
       text-align: left;
-      text-indent: 80px;
+      text-indent: 50px;
       &.is-active {
-        color: wheat !important;
+        color: #409eff;
         background-color: #000 !important;
         position: relative;
         &::after {
@@ -294,6 +320,7 @@ export default {
       }
       &.el_item {
         text-indent: 0px;
+        font-size: 16px;
         padding-left: 20px !important;
         background-color: #545c64 !important;
         &.is-active {
@@ -305,8 +332,8 @@ export default {
       &.title {
         text-align: left;
         text-indent: 0px;
-        color: white !important;
-        background-color: #545c64 !important;
+        color: white;
+        // background-color: #545c64 !important;
         &.is-active {
           &::after {
             border: 0;
@@ -317,12 +344,10 @@ export default {
           height: 60px;
         }
         .el-tooltip {
-          &:first-child {
-            padding: 0 !important;
-          }
+          padding: 0 !important;
         }
         span {
-          font-size: 20px;
+          font-size: 21px;
           font-weight: bold;
         }
       }
@@ -330,17 +355,16 @@ export default {
     .el-submenu {
       /deep/.el-submenu__title {
         text-align: left;
-        height: 60px !important;
+        font-size: 16px;
+        height: 60px;
         line-height: 60px;
       }
       a {
         text-decoration: none;
         color: white;
         display: block;
-
         &.router-link-active {
           background-color: #000;
-          color: wheat;
         }
       }
     }
@@ -354,47 +378,55 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-
   .el-button {
     height: 60px;
     margin-right: 10px;
     font-size: 25px;
+    padding: 0;
   }
-
-  .el-tabs {
+  /deep/.el-tabs--card {
     flex: 1;
     overflow: hidden;
-    height: 42px;
-
-    /deep/.el-tabs__header {
-      margin: 0;
-
-      .el-tabs__item {
-        color: white;
-        &.is-active {
-          border-bottom-color: #545c64;
-          color: wheat;
+    .el-tabs__header {
+      margin: 15px 0 0;
+      border-bottom: 0;
+      .el-tabs__nav {
+        border-bottom: 1px solid white;
+        .el-tabs__item {
+          border-bottom: 1px solid white;
+          height: 42px;
+          color: white;
+          &.is-active {
+            border-bottom-color: #545c64;
+            color: #409eff;
+          }
         }
       }
     }
   }
-
   .userInfo {
-    width: 120px;
+    width: 200px;
     display: flex;
     justify-content: space-around;
     align-items: center;
-
+    color: white;
     span {
-      &:last-child {
-        color: white;
-        display: block;
-      }
+      display: block;
     }
   }
 }
 
 .el-main {
   padding: 0;
+  // &:last-child{
+  //   overflow: hidden;
+  // }
+  
+}
+.el-container {
+  &:first-child{
+    height: 100%;
+  }
+  
 }
 </style>

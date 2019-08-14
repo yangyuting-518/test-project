@@ -9,6 +9,7 @@
 </template>
 
 <style lang="less" >
+@import './common/indexs.css';
 body{
   margin: 0;
   padding: 0;
